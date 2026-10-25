@@ -227,6 +227,7 @@ equivector/
 - Seed scripts: `seed_batch1.py`/`seed_batch2.py` became `clean_data.py` + `load_data.py --batch 1|2`. Prices are split/dividend-adjusted (`auto_adjust=True`) so daily returns are not distorted by splits. Clean CSVs (real data, fetched 2026-10-25) are committed as the offline fallback.
 - `db/security.sql`: RLS enabled (no policies) on all tables, so Supabase's public REST API cannot read or write them; the app connects as the owner via `pg`.
 - Phase 2: `top_movers` finds the latest two trading dates via `idx_prices_trade_date` (Index Only Scan Backward), then joins prices by PK. Similarity queries pass the query vector as a scalar subquery (InitPlan), because a JOIN-supplied vector prevents the HNSW index from being used (verified with EXPLAIN). Added `db/migrations/` (001 ALTER, 002 DROP), `db/queries/`, `docs/evidence/`.
+- Phase 3: all app SQL moved to `db/queries/` (loaded by `lib/sql.ts`); `/api/reports/[slug]` serves 9 reports from `lib/reports.ts`. Watchlist writes (add/update/remove) each run as a transaction with an activity_log row via `withTransaction()`. Temporary `DEMO_USER_ID` stands in for auth until Phase 4. Repo additions: `scripts/` (run-sql, prove-rollback), `db/demo/` (demo user, live trigger demo).
 - Embedding model confirmed: all-MiniLM-L6-v2, 384-dim (closes Open Item 2).
 
 ## Appendix A — Chen ER diagram (Graphviz DOT)

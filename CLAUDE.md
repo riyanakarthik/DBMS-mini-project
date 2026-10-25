@@ -10,6 +10,8 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 
 ## Rules
 - **Raw SQL is intentional** (graded). No ORM. DDL, views, triggers, indexes, migrations and report queries live in `db/*.sql` and are heavily commented. Students must be able to explain every line.
+- **All app SQL lives in `db/queries/**/*.sql`** (one statement per file, `$1..$n` params) and is loaded with `loadSql()` from `lib/sql.ts`. Don't inline SQL in routes.
+- `lib/db.ts` parses DATE as 'YYYY-MM-DD' strings and NUMERIC/BIGINT as numbers (avoids the timezone off-by-one-day bug).
 - **Parameterised queries only** (`$1, $2`). Never concatenate user input into SQL.
 - **Validate in the database** (NOT NULL, CHECK, FK, UNIQUE, named constraints) as well as in the app.
 - **Transactions**: use one client from the pool (`pool.connect()`), `BEGIN` / `COMMIT`, `ROLLBACK` in `catch`, `release()` in `finally`. Requires a direct or session-mode connection string, not transaction-mode pooling.
@@ -33,3 +35,5 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 - `npm run dev`: app on http://localhost:3000 (`/api/health` checks DB connectivity).
 - `npm run lint`, `npm run build`.
 - `psql "$DATABASE_URL" -f db/schema.sql`: apply schema.
+- `npx tsx scripts/run-sql.ts <file.sql> [params]`: run a db/queries file exactly as the API does.
+- `npx tsx scripts/prove-rollback.ts`: transaction rollback proof. `psql "$DATABASE_URL" -f db/demo/fire_trigger_live.sql`: live trigger demo.

@@ -1,4 +1,13 @@
-import { Pool, type QueryResultRow } from "pg";
+import { Pool, types, type PoolClient, type QueryResultRow } from "pg";
+
+// Type parsing (OIDs are Postgres type ids):
+// DATE (1082): keep as 'YYYY-MM-DD'. The default turns it into a JS Date at
+//   *local* midnight, which shifts to the previous day when sent as UTC JSON.
+types.setTypeParser(1082, (v) => v);
+// NUMERIC (1700) and BIGINT/count(*) (20): pg returns strings to avoid
+// precision loss; our values (prices, %s, counts) fit safely in a JS number.
+types.setTypeParser(1700, (v) => parseFloat(v));
+types.setTypeParser(20, (v) => parseInt(v, 10));
 
 // One shared connection pool for all API routes. Credentials come only from
 // env vars (.env.local); nothing is hard-coded.
@@ -33,4 +42,22 @@ export function getPool(): Pool {
 export async function query<T extends QueryResultRow>(text: string, params: unknown[] = []) {
   const result = await getPool().query<T>(text, params);
   return result.rows;
+}
+
+// Run `work` inside one database transaction on ONE pooled connection.
+// All statements see each other's effects and commit together; if any of
+// them throws (e.g. a constraint violation), everything is rolled back.
+export async function withTransaction<T>(work: (client: PoolClient) => Promise<T>): Promise<T> {
+  const client = await getPool().connect(); // a transaction must stay on one connection
+  try {
+    await client.query("BEGIN");
+    const result = await work(client);
+    await client.query("COMMIT");
+    return result;
+  } catch (err) {
+    await client.query("ROLLBACK"); // undo every statement since BEGIN
+    throw err;
+  } finally {
+    client.release(); // return the connection to the pool either way
+  }
 }

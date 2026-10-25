@@ -1,0 +1,7 @@
+before: { watchlist_rows: 0, activity_log_rows: 460, ko_on_watchlist: false }
+  scenario 1: inside the transaction the new row IS visible (watchlist rows = 1)
+  scenario 1 failed as intended: forced failure after both INSERTs, before COMMIT
+after scenario 1: { watchlist_rows: 0, activity_log_rows: 460, ko_on_watchlist: false }
+  scenario 2 failed as intended: new row for relation "activity_log" violates check constraint "activity_log_action_check" [constraint: activity_log_action_check]
+after scenario 2: { watchlist_rows: 0, activity_log_rows: 460, ko_on_watchlist: false }
+PASS: nothing persisted from either failed transaction

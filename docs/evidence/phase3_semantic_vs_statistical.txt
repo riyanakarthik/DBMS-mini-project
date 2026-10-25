@@ -1,0 +1,87 @@
+# Phase 3: semantic vs statistical numbers (run 2026-10-25T14:53Z)
+## JPM semantic
+┌─────────┬────────┬─────────────────────────────────┬──────────────────────┬───────────────────────┬───────────────────┐
+│ (index) │ ticker │ name                            │ sector               │ industry              │ cosine_similarity │
+├─────────┼────────┼─────────────────────────────────┼──────────────────────┼───────────────────────┼───────────────────┤
+│ 0       │ 'MS'   │ 'Morgan Stanley'                │ 'Financial Services' │ 'Capital Markets'     │ 0.635             │
+│ 1       │ 'GS'   │ 'The Goldman Sachs Group, Inc.' │ 'Financial Services' │ 'Capital Markets'     │ 0.615             │
+│ 2       │ 'BAC'  │ 'Bank of America Corporation'   │ 'Financial Services' │ 'Banks - Diversified' │ 0.589             │
+│ 3       │ 'WFC'  │ 'Wells Fargo & Company'         │ 'Financial Services' │ 'Banks - Diversified' │ 0.526             │
+│ 4       │ 'MA'   │ 'Mastercard Incorporated'       │ 'Financial Services' │ 'Credit Services'     │ 0.46              │
+└─────────┴────────┴─────────────────────────────────┴──────────────────────┴───────────────────────┴───────────────────┘
+5 rows in 1280 ms
+## JPM correlation
+┌─────────┬────────┬─────────────────────────────────┬──────────────────────┬───────────────────────┬────────────────────┬───────────┐
+│ (index) │ ticker │ name                            │ sector               │ industry              │ return_correlation │ days_used │
+├─────────┼────────┼─────────────────────────────────┼──────────────────────┼───────────────────────┼────────────────────┼───────────┤
+│ 0       │ 'BAC'  │ 'Bank of America Corporation'   │ 'Financial Services' │ 'Banks - Diversified' │ 0.743              │ 250       │
+│ 1       │ 'WFC'  │ 'Wells Fargo & Company'         │ 'Financial Services' │ 'Banks - Diversified' │ 0.716              │ 250       │
+│ 2       │ 'MS'   │ 'Morgan Stanley'                │ 'Financial Services' │ 'Capital Markets'     │ 0.621              │ 250       │
+│ 3       │ 'GS'   │ 'The Goldman Sachs Group, Inc.' │ 'Financial Services' │ 'Capital Markets'     │ 0.607              │ 250       │
+│ 4       │ 'AXP'  │ 'American Express Company'      │ 'Financial Services' │ 'Credit Services'     │ 0.552              │ 250       │
+└─────────┴────────┴─────────────────────────────────┴──────────────────────┴───────────────────────┴────────────────────┴───────────┘
+5 rows in 1660 ms
+## NVDA semantic
+┌─────────┬────────┬──────────────────────────────────┬──────────────┬──────────────────────────┬───────────────────┐
+│ (index) │ ticker │ name                             │ sector       │ industry                 │ cosine_similarity │
+├─────────┼────────┼──────────────────────────────────┼──────────────┼──────────────────────────┼───────────────────┤
+│ 0       │ 'AMD'  │ 'Advanced Micro Devices, Inc.'   │ 'Technology' │ 'Semiconductors'         │ 0.586             │
+│ 1       │ 'INTC' │ 'Intel Corporation'              │ 'Technology' │ 'Semiconductors'         │ 0.549             │
+│ 2       │ 'TXN'  │ 'Texas Instruments Incorporated' │ 'Technology' │ 'Semiconductors'         │ 0.469             │
+│ 3       │ 'CRM'  │ 'Salesforce, Inc.'               │ 'Technology' │ 'Software - Application' │ 0.461             │
+│ 4       │ 'AVGO' │ 'Broadcom Inc.'                  │ 'Technology' │ 'Semiconductors'         │ 0.451             │
+└─────────┴────────┴──────────────────────────────────┴──────────────┴──────────────────────────┴───────────────────┘
+5 rows in 1812 ms
+## NVDA correlation
+┌─────────┬────────┬─────────────────────────────────┬──────────────────────┬─────────────────────────────┬────────────────────┬───────────┐
+│ (index) │ ticker │ name                            │ sector               │ industry                    │ return_correlation │ days_used │
+├─────────┼────────┼─────────────────────────────────┼──────────────────────┼─────────────────────────────┼────────────────────┼───────────┤
+│ 0       │ 'AVGO' │ 'Broadcom Inc.'                 │ 'Technology'         │ 'Semiconductors'            │ 0.534              │ 250       │
+│ 1       │ 'AMD'  │ 'Advanced Micro Devices, Inc.'  │ 'Technology'         │ 'Semiconductors'            │ 0.517              │ 250       │
+│ 2       │ 'GS'   │ 'The Goldman Sachs Group, Inc.' │ 'Financial Services' │ 'Capital Markets'           │ 0.45               │ 250       │
+│ 3       │ 'TSLA' │ 'Tesla, Inc.'                   │ 'Consumer Cyclical'  │ 'Auto Manufacturers'        │ 0.438              │ 250       │
+│ 4       │ 'ORCL' │ 'Oracle Corporation'            │ 'Technology'         │ 'Software - Infrastructure' │ 0.431              │ 250       │
+└─────────┴────────┴─────────────────────────────────┴──────────────────────┴─────────────────────────────┴────────────────────┴───────────┘
+5 rows in 3285 ms
+## XOM semantic
+┌─────────┬────────┬────────────────────────────────────┬───────────────┬──────────────────────────────────┬───────────────────┐
+│ (index) │ ticker │ name                               │ sector        │ industry                         │ cosine_similarity │
+├─────────┼────────┼────────────────────────────────────┼───────────────┼──────────────────────────────────┼───────────────────┤
+│ 0       │ 'CVX'  │ 'Chevron Corporation'              │ 'Energy'      │ 'Oil & Gas Integrated'           │ 0.662             │
+│ 1       │ 'PSX'  │ 'Phillips 66'                      │ 'Energy'      │ 'Oil & Gas Refining & Marketing' │ 0.623             │
+│ 2       │ 'OXY'  │ 'Occidental Petroleum Corporation' │ 'Energy'      │ 'Oil & Gas E&P'                  │ 0.52              │
+│ 3       │ 'GE'   │ 'GE Aerospace'                     │ 'Industrials' │ 'Aerospace & Defense'            │ 0.489             │
+│ 4       │ 'EOG'  │ 'EOG Resources, Inc.'              │ 'Energy'      │ 'Oil & Gas E&P'                  │ 0.473             │
+└─────────┴────────┴────────────────────────────────────┴───────────────┴──────────────────────────────────┴───────────────────┘
+5 rows in 1220 ms
+## XOM correlation
+┌─────────┬────────┬────────────────────────────────────┬──────────┬──────────────────────────────────┬────────────────────┬───────────┐
+│ (index) │ ticker │ name                               │ sector   │ industry                         │ return_correlation │ days_used │
+├─────────┼────────┼────────────────────────────────────┼──────────┼──────────────────────────────────┼────────────────────┼───────────┤
+│ 0       │ 'CVX'  │ 'Chevron Corporation'              │ 'Energy' │ 'Oil & Gas Integrated'           │ 0.847              │ 250       │
+│ 1       │ 'COP'  │ 'ConocoPhillips'                   │ 'Energy' │ 'Oil & Gas E&P'                  │ 0.816              │ 250       │
+│ 2       │ 'EOG'  │ 'EOG Resources, Inc.'              │ 'Energy' │ 'Oil & Gas E&P'                  │ 0.776              │ 250       │
+│ 3       │ 'OXY'  │ 'Occidental Petroleum Corporation' │ 'Energy' │ 'Oil & Gas E&P'                  │ 0.746              │ 250       │
+│ 4       │ 'PSX'  │ 'Phillips 66'                      │ 'Energy' │ 'Oil & Gas Refining & Marketing' │ 0.601              │ 250       │
+└─────────┴────────┴────────────────────────────────────┴──────────┴──────────────────────────────────┴────────────────────┴───────────┘
+5 rows in 1638 ms
+## all-pairs report
+┌─────────┬──────────────────────────────────┬───────┬─────────────────┬────────────────┬────────────────┐
+│ (index) │ pair_group                       │ pairs │ avg_return_corr │ sd_return_corr │ avg_cosine_sim │
+├─────────┼──────────────────────────────────┼───────┼─────────────────┼────────────────┼────────────────┤
+│ 0       │ 'Semantic top-5 neighbours'      │ 307   │ 0.295           │ 0.269          │ 0.445          │
+│ 1       │ '  ...of which same sector'      │ 154   │ 0.461           │ 0.227          │ 0.485          │
+│ 2       │ '  ...of which different sector' │ 153   │ 0.129           │ 0.195          │ 0.406          │
+│ 3       │ 'Same-sector pairs'              │ 356   │ 0.321           │ 0.235          │ 0.375          │
+│ 4       │ 'Random pairs (sample)'          │ 307   │ 0.095           │ 0.188          │ 0.217          │
+│ 5       │ 'All pairs (baseline)'           │ 4186  │ 0.102           │ 0.186          │ 0.223          │
+└─────────┴──────────────────────────────────┴───────┴─────────────────┴────────────────┴────────────────┘
+6 rows in 1980 ms
+┌─────────┬────────────────┬────────────────────┬───────────────────┬─────────────┬──────────────────┐
+│ (index) │ corr_all_pairs │ corr_within_sector │ corr_cross_sector │ avg_jaccard │ avg_overlap_of_5 │
+├─────────┼────────────────┼────────────────────┼───────────────────┼─────────────┼──────────────────┤
+│ 0       │ 0.28           │ 0.537              │ 0.075             │ 0.288       │ 1.98             │
+└─────────┴────────────────┴────────────────────┴───────────────────┴─────────────┴──────────────────┘
+1 rows in 2708 ms
+## vector report
+

@@ -1,0 +1,41 @@
+BEGIN
+=== BEFORE ===
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-25 14:29:36.858802+00
+(1 row)
+
+ activity_log_rows | price_insert_rows 
+-------------------+-------------------
+               460 |               460
+(1 row)
+
+SELECT 2
+DELETE 2
+ pg_sleep 
+----------
+ 
+(1 row)
+
+=== INSERT 2 price rows ===
+INSERT 0 2
+=== AFTER ===
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-25 14:45:24.171298+00
+(1 row)
+
+ activity_log_rows | price_insert_rows 
+-------------------+-------------------
+               462 |               462
+(1 row)
+
+=== The newest activity_log rows (written by the trigger) ===
+ log_id |    action    | ticker | user_id |           logged_at           
+--------+--------------+--------+---------+-------------------------------
+    464 | PRICE_INSERT | AAPL   |         | 2026-10-25 14:45:24.171298+00
+    463 | PRICE_INSERT | AAPL   |         | 2026-10-25 14:45:24.171298+00
+    460 | PRICE_INSERT | XOM    |         | 2026-10-25 14:29:36.858802+00
+(3 rows)
+
+COMMIT

@@ -1,7 +1,8 @@
 -- =====================================================================
--- Vector similarity search: top-5 semantic neighbours of one company.
---   psql "$DATABASE_URL" -v ticker=JPM -f db/queries/similar_companies.sql
--- (The API route uses the same SQL with $1 in place of :'ticker'.)
+-- SEMANTIC similarity: top-5 nearest neighbours of one company by
+-- description embedding (pgvector).
+--   $1 = ticker, e.g. 'JPM'
+--   npx tsx scripts/run-sql.ts db/queries/similar_companies.sql JPM
 --
 -- <=> is pgvector's COSINE DISTANCE operator:
 --   0 = same direction (same meaning) ... 2 = opposite.
@@ -23,9 +24,9 @@ SELECT ticker,
        round((1 - (description_embedding <=> q.emb))::numeric, 3) AS cosine_similarity
 FROM companies,
      -- the query vector, fetched once; reused in SELECT for the similarity
-     (SELECT description_embedding AS emb FROM companies WHERE ticker = :'ticker') AS q
-WHERE ticker <> :'ticker'                         -- exclude the company itself
+     (SELECT description_embedding AS emb FROM companies WHERE ticker = $1) AS q
+WHERE ticker <> $1                                -- exclude the company itself
 ORDER BY description_embedding <=> (SELECT description_embedding
                                     FROM companies
-                                    WHERE ticker = :'ticker')  -- nearest first
+                                    WHERE ticker = $1)  -- nearest first
 LIMIT 5;

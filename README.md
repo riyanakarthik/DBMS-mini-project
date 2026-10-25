@@ -80,13 +80,35 @@ psql "$DATABASE_URL" -f db/tests/trigger_snapshot.sql   # "after": activity_log 
 ```
 Data: 92 companies across 11 sectors, daily split/dividend-adjusted OHLCV from 2025-09-22 to 2026-10-23 (275 trading days). Batch 1 = 24,840 rows, batch 2 = the last 5 trading days (460 rows). Every load is a single transaction and safe to re-run. Recorded outputs are in `docs/evidence/`.
 
-Semantic neighbours of any company: `psql "$DATABASE_URL" -v ticker=JPM -f db/queries/similar_companies.sql`.
+Semantic neighbours of any company: `npx tsx scripts/run-sql.ts db/queries/similar_companies.sql JPM` (the query files use `$1` parameters, like the API).
 
-### 4. Run
+### 4. Demo user (temporary, until Phase 4 auth)
+```bash
+psql "$DATABASE_URL" -f db/demo/create_demo_user.sql   # prints a UUID
+# put it in .env.local as DEMO_USER_ID=<uuid>
+```
+
+### 5. Run
 ```bash
 npm run dev
-# open http://localhost:3000, and http://localhost:3000/api/health to check the DB connection
+# http://localhost:3000            pages: /dashboard /search /reports /watchlist
+# http://localhost:3000/api/health DB connectivity check
 ```
+
+| Page | What it shows | Backed by |
+|---|---|---|
+| `/dashboard` | top movers (view), sector view, price chart per company | `/api/top-movers`, `/api/reports/sector-*`, `/api/prices` |
+| `/search` | **Semantic vs statistical**: top-5 description neighbours (pgvector) next to top-5 return correlations (`LAG` + `corr()`), overlap + Jaccard | `/api/similar` |
+| `/reports` | 9 analytical reports, each one SQL file in `db/queries/reports/`, as table + chart | `/api/reports/<name>` |
+| `/watchlist` | add (transaction), edit note (UPDATE), remove (DELETE) | `/api/watchlist` |
+
+### 6. Useful scripts
+```bash
+npx tsx scripts/run-sql.ts db/queries/correlated_companies.sql JPM   # run any query file; extra args = $1, $2...
+npx tsx scripts/prove-rollback.ts                                    # forces 2 failed transactions, shows nothing persisted
+psql "$DATABASE_URL" -f db/demo/fire_trigger_live.sql                # LIVE trigger demo (repeatable; -v ticker=NVDA)
+```
+`fire_trigger_live.sql` deletes a company's 2 latest real price rows and re-inserts the identical values inside one transaction, so the `AFTER INSERT` trigger visibly fires (activity_log +2, new `last_updated`) without inventing any prices.
 
 ### ER diagram
 Render `docs/er-diagram.dot` with Graphviz:
@@ -100,8 +122,9 @@ Or paste the file into any online Graphviz viewer, with the engine set to *neato
 ```
 app/            Next.js pages and API routes (app/api/*/route.ts)
 components/ui/  shadcn/ui components
-lib/db.ts       pg connection pool (env-var configured)
-db/             schema.sql, indexes/views/triggers (Phase 2), migrations/, tests/, local/
+lib/            db.ts (pg pool + withTransaction), sql.ts (loads db/queries/*.sql), reports.ts, watchlist.ts
+scripts/        run-sql.ts, prove-rollback.ts (run with npx tsx)
+db/             schema/indexes/views/triggers/security .sql, queries/ (every SQL the app runs), migrations/, demo/, tests/, local/
 seed/           Python data + embedding pipeline (Phase 1–2)
 docs/           ER diagram and project documentation
 ```
@@ -117,6 +140,6 @@ docs/           ER diagram and project documentation
 - [x] Phase 0: scaffold, schema (5 tables + constraints), ER diagram, env template
 - [x] Phase 1: seed pipeline (92 companies, batch 1 loaded)
 - [x] Phase 2: embeddings, views, triggers, indexes, migrations (ALTER/DROP)
-- [ ] Phase 3: API routes + pages (dashboard, search, reports, watchlist)
+- [x] Phase 3: API routes + pages (dashboard, search, reports, watchlist), rollback proof, live trigger demo
 - [ ] Phase 4: auth + roles
 - [ ] Phase 5: documentation + rubric checklist
