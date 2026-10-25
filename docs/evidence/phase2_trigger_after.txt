@@ -1,0 +1,40 @@
+--- activity_log rows per action
+    action    | rows 
+--------------+------
+ PRICE_INSERT |  460
+(1 row)
+
+--- activity_log total, prices total, latest trade_date
+ activity_log_rows | price_rows | latest_trade_date 
+-------------------+------------+-------------------
+               460 |      25300 | 2026-10-23
+(1 row)
+
+--- companies.last_updated (set by the trigger), 3 examples
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-25 14:29:36.858802+00
+ JPM    | 2026-10-25 14:29:36.858802+00
+ XOM    | 2026-10-25 14:29:36.858802+00
+(3 rows)
+
+--- top_movers: top 5 gainers
+ ticker |   sector    | prev_date  | trade_date | prev_close |  close   | pct_change 
+--------+-------------+------------+------------+------------+----------+------------
+ CCI    | Real Estate | 2026-10-22 | 2026-10-23 |    78.8300 |  85.9700 |       9.06
+ SLB    | Energy      | 2026-10-22 | 2026-10-23 |    49.5500 |  53.0600 |       7.08
+ AMT    | Real Estate | 2026-10-22 | 2026-10-23 |   181.5700 | 188.9700 |       4.08
+ COP    | Energy      | 2026-10-22 | 2026-10-23 |   145.6300 | 150.8000 |       3.55
+ EOG    | Energy      | 2026-10-22 | 2026-10-23 |   157.9600 | 163.0300 |       3.21
+(5 rows)
+
+--- top_movers: bottom 5 (biggest losers)
+ ticker |         sector         | prev_date  | trade_date | prev_close |  close   | pct_change 
+--------+------------------------+------------+------------+------------+----------+------------
+ T      | Communication Services | 2026-10-22 | 2026-10-23 |    22.7400 |  20.9300 |      -7.96
+ TMUS   | Communication Services | 2026-10-22 | 2026-10-23 |   158.7900 | 146.5400 |      -7.71
+ NEM    | Basic Materials        | 2026-10-22 | 2026-10-23 |   114.1100 | 108.8700 |      -4.59
+ AXP    | Financial Services     | 2026-10-22 | 2026-10-23 |   325.1700 | 313.2200 |      -3.68
+ CL     | Consumer Defensive     | 2026-10-22 | 2026-10-23 |    97.3900 |  94.0400 |      -3.44
+(5 rows)
+

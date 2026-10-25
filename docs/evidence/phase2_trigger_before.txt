@@ -1,0 +1,39 @@
+--- activity_log rows per action
+ action | rows 
+--------+------
+(0 rows)
+
+--- activity_log total, prices total, latest trade_date
+ activity_log_rows | price_rows | latest_trade_date 
+-------------------+------------+-------------------
+                 0 |      24840 | 2026-10-16
+(1 row)
+
+--- companies.last_updated (set by the trigger), 3 examples
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-25 11:22:53.445941+00
+ JPM    | 2026-10-25 11:22:53.445941+00
+ XOM    | 2026-10-25 11:22:53.445941+00
+(3 rows)
+
+--- top_movers: top 5 gainers
+ ticker |   sector    | prev_date  | trade_date | prev_close |  close   | pct_change 
+--------+-------------+------------+------------+------------+----------+------------
+ EOG    | Energy      | 2026-10-15 | 2026-10-16 |   151.6000 | 158.0100 |       4.23
+ RTX    | Industrials | 2026-10-15 | 2026-10-16 |   186.9500 | 193.9200 |       3.73
+ LMT    | Industrials | 2026-10-15 | 2026-10-16 |   532.6400 | 552.0900 |       3.65
+ COP    | Energy      | 2026-10-15 | 2026-10-16 |   141.7300 | 146.5100 |       3.37
+ CCI    | Real Estate | 2026-10-15 | 2026-10-16 |    80.0000 |  82.2600 |       2.83
+(5 rows)
+
+--- top_movers: bottom 5 (biggest losers)
+ ticker |         sector         | prev_date  | trade_date | prev_close |  close   | pct_change 
+--------+------------------------+------------+------------+------------+----------+------------
+ AMD    | Technology             | 2026-10-15 | 2026-10-16 |   562.2300 | 528.7500 |      -5.95
+ INTC   | Technology             | 2026-10-15 | 2026-10-16 |    95.3700 |  89.8500 |      -5.79
+ ORCL   | Technology             | 2026-10-15 | 2026-10-16 |   134.4700 | 128.2300 |      -4.64
+ AVGO   | Technology             | 2026-10-15 | 2026-10-16 |   344.3300 | 328.7500 |      -4.52
+ META   | Communication Services | 2026-10-15 | 2026-10-16 |   736.7200 | 709.3300 |      -3.72
+(5 rows)
+

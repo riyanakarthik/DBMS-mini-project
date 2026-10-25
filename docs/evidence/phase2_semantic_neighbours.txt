@@ -1,0 +1,32 @@
+=== JPM (Banks - Diversified)
+ ticker |             name              |       sector       |      industry       | cosine_similarity 
+--------+-------------------------------+--------------------+---------------------+-------------------
+ MS     | Morgan Stanley                | Financial Services | Capital Markets     |             0.635
+ GS     | The Goldman Sachs Group, Inc. | Financial Services | Capital Markets     |             0.615
+ BAC    | Bank of America Corporation   | Financial Services | Banks - Diversified |             0.589
+ WFC    | Wells Fargo & Company         | Financial Services | Banks - Diversified |             0.526
+ MA     | Mastercard Incorporated       | Financial Services | Credit Services     |             0.460
+=== XOM (Oil & Gas Integrated)
+ ticker |               name               |   sector    |            industry            | cosine_similarity 
+--------+----------------------------------+-------------+--------------------------------+-------------------
+ CVX    | Chevron Corporation              | Energy      | Oil & Gas Integrated           |             0.662
+ PSX    | Phillips 66                      | Energy      | Oil & Gas Refining & Marketing |             0.623
+ OXY    | Occidental Petroleum Corporation | Energy      | Oil & Gas E&P                  |             0.520
+ GE     | GE Aerospace                     | Industrials | Aerospace & Defense            |             0.489
+ EOG    | EOG Resources, Inc.              | Energy      | Oil & Gas E&P                  |             0.473
+=== NVDA (Semiconductors)
+ ticker |              name              |   sector   |        industry        | cosine_similarity 
+--------+--------------------------------+------------+------------------------+-------------------
+ AMD    | Advanced Micro Devices, Inc.   | Technology | Semiconductors         |             0.586
+ INTC   | Intel Corporation              | Technology | Semiconductors         |             0.549
+ TXN    | Texas Instruments Incorporated | Technology | Semiconductors         |             0.469
+ CRM    | Salesforce, Inc.               | Technology | Software - Application |             0.461
+ AVGO   | Broadcom Inc.                  | Technology | Semiconductors         |             0.451
+=== KO (Beverages - Non-Alcoholic)
+ ticker |             name             |       sector       |           industry            | cosine_similarity 
+--------+------------------------------+--------------------+-------------------------------+-------------------
+ PEP    | PepsiCo, Inc.                | Consumer Defensive | Beverages - Non-Alcoholic     |             0.691
+ KHC    | The Kraft Heinz Company      | Consumer Defensive | Packaged Foods                |             0.472
+ MDLZ   | Mondelez International, Inc. | Consumer Defensive | Confectioners                 |             0.412
+ WMT    | Walmart Inc.                 | Consumer Defensive | Discount Stores               |             0.399
+ PG     | The Procter & Gamble Company | Consumer Defensive | Household & Personal Products |             0.391

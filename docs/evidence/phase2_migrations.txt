@@ -1,0 +1,58 @@
+== 001
+BEGIN
+ALTER TABLE
+psql:db/migrations/001_watchlists_add_updated_at.sql:19: NOTICE:  constraint "watchlists_updated_after_created" of relation "watchlists" does not exist, skipping
+ALTER TABLE
+ALTER TABLE
+COMMIT
+                       Table "public.watchlists"
+   Column   |           Type           | Collation | Nullable | Default 
+------------+--------------------------+-----------+----------+---------
+ user_id    | uuid                     |           | not null | 
+ cik        | character varying(10)    |           | not null | 
+ note       | text                     |           |          | 
+ created_at | timestamp with time zone |           | not null | now()
+ updated_at | timestamp with time zone |           |          | 
+Indexes:
+    "watchlists_pkey" PRIMARY KEY, btree (user_id, cik)
+Check constraints:
+    "watchlists_note_len" CHECK (char_length(note) <= 500)
+    "watchlists_updated_after_created" CHECK (updated_at >= created_at)
+Foreign-key constraints:
+    "watchlists_cik_fkey" FOREIGN KEY (cik) REFERENCES companies(cik) ON DELETE CASCADE
+    "watchlists_user_id_fkey" FOREIGN KEY (user_id) REFERENCES profiles(user_id) ON DELETE CASCADE
+Policies (row security enabled): (none)
+
+== 001 re-run (idempotent)
+BEGIN
+psql:db/migrations/001_watchlists_add_updated_at.sql:14: NOTICE:  column "updated_at" of relation "watchlists" already exists, skipping
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+COMMIT
+== 002
+CREATE INDEX
+--- before DROP: index sizes on prices
+      index_name       |  size  
+-----------------------+--------
+ prices_pkey           | 752 kB
+ idx_prices_trade_date | 192 kB
+ idx_prices_cik        | 200 kB
+(3 rows)
+
+DROP INDEX
+--- after DROP: a per-company lookup still uses an index (prices_pkey)
+                    QUERY PLAN                    
+--------------------------------------------------
+ Index Scan using prices_pkey on prices
+   Index Cond: ((cik)::text = '0000320193'::text)
+(2 rows)
+
+CREATE VIEW
+DROP VIEW
+--- after DROP VIEW: remaining views in public
+ view_name  
+------------
+ top_movers
+(1 row)
+

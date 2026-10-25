@@ -1,0 +1,3 @@
+before: {'companies': 92, 'prices': 24840, 'first_date': '2025-09-22', 'last_date': '2026-10-16'}
+prices batch 2: 460 rows in file, 460 inserted, 0 already present
+after:  {'companies': 92, 'prices': 25300, 'first_date': '2025-09-22', 'last_date': '2026-10-23'}

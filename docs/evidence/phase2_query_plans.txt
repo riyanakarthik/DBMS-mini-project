@@ -1,0 +1,41 @@
+-- EXPLAIN of db/queries/similar_companies.sql (ticker=JPM), seq scans disabled to show the HNSW path
+                                    QUERY PLAN                                    
+----------------------------------------------------------------------------------
+ Limit
+   InitPlan 1
+     ->  Index Scan using companies_ticker_key on companies companies_2
+           Index Cond: ((ticker)::text = 'JPM'::text)
+   ->  Nested Loop
+         ->  Index Scan using idx_companies_embedding on companies
+               Order By: (description_embedding <=> (InitPlan 1).col1)
+               Filter: ((ticker)::text <> 'JPM'::text)
+         ->  Materialize
+               ->  Index Scan using companies_ticker_key on companies companies_1
+                     Index Cond: ((ticker)::text = 'JPM'::text)
+(11 rows)
+
+-- EXPLAIN SELECT * FROM top_movers
+                                                  QUERY PLAN                                                   
+---------------------------------------------------------------------------------------------------------------
+ Sort
+   Sort Key: (round((((cur.close - prev.close) / prev.close) * '100'::numeric), 2)) DESC
+   ->  Nested Loop
+         ->  Nested Loop
+               ->  Nested Loop
+                     ->  Aggregate
+                           ->  Limit
+                                 ->  Unique
+                                       ->  Index Only Scan Backward using idx_prices_trade_date on prices
+                     ->  Bitmap Heap Scan on prices cur
+                           Recheck Cond: (trade_date = (max(prices.trade_date)))
+                           ->  Bitmap Index Scan on idx_prices_trade_date
+                                 Index Cond: (trade_date = (max(prices.trade_date)))
+               ->  Index Scan using companies_pkey on companies c
+                     Index Cond: ((cik)::text = (cur.cik)::text)
+         ->  Memoize
+               Cache Key: cur.cik, (min(prices.trade_date))
+               Cache Mode: logical
+               ->  Index Scan using prices_pkey on prices prev
+                     Index Cond: (((cik)::text = (cur.cik)::text) AND (trade_date = (min(prices.trade_date))))
+(20 rows)
+

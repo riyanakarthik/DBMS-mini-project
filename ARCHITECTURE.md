@@ -166,7 +166,12 @@ equivector/
 │   ├── schema.sql              # CREATE TABLE statements (5 tables)
 │   ├── views.sql
 │   ├── triggers.sql
-│   └── indexes.sql
+│   ├── indexes.sql
+│   ├── security.sql            # RLS lockdown vs Supabase REST API
+│   ├── migrations/             # 001 ALTER, 002 DROP
+│   ├── queries/                # documented standalone queries (similar_companies.sql)
+│   ├── tests/                  # constraint tests, trigger snapshot
+│   └── local/                  # auth_stub.sql for non-Supabase Postgres
 ├── app/
 │   ├── api/
 │   │   ├── companies/route.ts
@@ -221,6 +226,7 @@ equivector/
 - Added §6a (vector documentation + data-placement justification) and §6b (novelty feature).
 - Seed scripts: `seed_batch1.py`/`seed_batch2.py` became `clean_data.py` + `load_data.py --batch 1|2`. Prices are split/dividend-adjusted (`auto_adjust=True`) so daily returns are not distorted by splits. Clean CSVs (real data, fetched 2026-10-25) are committed as the offline fallback.
 - `db/security.sql`: RLS enabled (no policies) on all tables, so Supabase's public REST API cannot read or write them; the app connects as the owner via `pg`.
+- Phase 2: `top_movers` finds the latest two trading dates via `idx_prices_trade_date` (Index Only Scan Backward), then joins prices by PK. Similarity queries pass the query vector as a scalar subquery (InitPlan), because a JOIN-supplied vector prevents the HNSW index from being used (verified with EXPLAIN). Added `db/migrations/` (001 ALTER, 002 DROP), `db/queries/`, `docs/evidence/`.
 - Embedding model confirmed: all-MiniLM-L6-v2, 384-dim (closes Open Item 2).
 
 ## Appendix A — Chen ER diagram (Graphviz DOT)

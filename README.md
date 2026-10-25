@@ -53,7 +53,9 @@ psql -d equivector -f db/schema.sql
 
 Optional constraint check (on a throwaway DB): `psql -d <scratch_db> -f db/tests/constraints_test.sql`.
 
-### 3. Seed data
+### 3. Seed data, indexes, views, triggers
+Run in this exact order to reproduce the demo state. The trigger is installed
+**after** batch 1, so only batch 2 produces activity_log rows (460, not 25,300).
 ```bash
 cd seed && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -63,10 +65,22 @@ pip install -r requirements.txt
 python fetch_data.py          # SEC CIKs + yfinance info + ~13 months of daily prices → data/raw/
 python clean_data.py          # validate, drop bad rows (counted in clean_report.json) → data/clean/
 
-python load_data.py --batch 1 # companies + prices up to the last week ("week 1")
-# Phase 2: python embed_descriptions.py; python load_data.py --batch 2  (fires the prices trigger)
+python load_data.py --batch 1 # companies + prices up to 2026-10-16 ("week 1")
+python embed_descriptions.py  # all-MiniLM-L6-v2 → companies.description_embedding (first run downloads ~90 MB model)
+cd ..
+psql "$DATABASE_URL" -f db/indexes.sql      # idx_prices_trade_date + HNSW cosine index
+psql "$DATABASE_URL" -f db/views.sql        # top_movers
+psql "$DATABASE_URL" -f db/triggers.sql     # AFTER INSERT ON prices
+psql "$DATABASE_URL" -f db/migrations/001_watchlists_add_updated_at.sql   # ALTER demo
+psql "$DATABASE_URL" -f db/migrations/002_drop_redundant_index.sql        # DROP demo
+
+psql "$DATABASE_URL" -f db/tests/trigger_snapshot.sql   # "before" snapshot
+(cd seed && .venv/bin/python load_data.py --batch 2)    # last 5 trading days → trigger fires
+psql "$DATABASE_URL" -f db/tests/trigger_snapshot.sql   # "after": activity_log 0 → 460, top_movers moves on a week
 ```
-Data: 92 companies across 11 sectors, daily split/dividend-adjusted OHLCV from 2025-09-22 to 2026-10-23 (275 trading days). Batch 1 = 24,840 rows, batch 2 = the last 5 trading days (460 rows). Every load is a single transaction and safe to re-run.
+Data: 92 companies across 11 sectors, daily split/dividend-adjusted OHLCV from 2025-09-22 to 2026-10-23 (275 trading days). Batch 1 = 24,840 rows, batch 2 = the last 5 trading days (460 rows). Every load is a single transaction and safe to re-run. Recorded outputs are in `docs/evidence/`.
+
+Semantic neighbours of any company: `psql "$DATABASE_URL" -v ticker=JPM -f db/queries/similar_companies.sql`.
 
 ### 4. Run
 ```bash
@@ -102,7 +116,7 @@ docs/           ER diagram and project documentation
 ## Status
 - [x] Phase 0: scaffold, schema (5 tables + constraints), ER diagram, env template
 - [x] Phase 1: seed pipeline (92 companies, batch 1 loaded)
-- [ ] Phase 2: embeddings, views, triggers, indexes
+- [x] Phase 2: embeddings, views, triggers, indexes, migrations (ALTER/DROP)
 - [ ] Phase 3: API routes + pages (dashboard, search, reports, watchlist)
 - [ ] Phase 4: auth + roles
 - [ ] Phase 5: documentation + rubric checklist
