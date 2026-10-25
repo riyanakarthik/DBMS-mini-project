@@ -1,0 +1,63 @@
+graph EquiVector_ERD {
+  layout=neato; overlap=false; splines=true; sep="+0.4";
+  label="EquiVector ER Diagram (Chen notation)"; labelloc=t; fontsize=18;
+  node [fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=11, len=1.1];
+
+  // Entities (double border = weak entity)
+  node [shape=box, style=filled, fillcolor="#DCE9FF", margin="0.25,0.15"];
+  COMPANY; PROFILE; ACTIVITY_LOG;
+  PRICE [peripheries=2];
+
+  // Relationships (double border = identifying)
+  node [shape=diamond, style=filled, fillcolor="#FFE9B5", margin="0.05,0.05"];
+  HAS_PRICE [peripheries=2];
+  WATCHES; LOGGED_FOR; PERFORMED_BY;
+
+  // Attributes (underline = key / partial key)
+  node [shape=ellipse, style=filled, fillcolor="white", margin="0.05,0.03"];
+  c_cik [label=<<U>cik</U>>];
+  c_ticker [label="ticker"];
+  c_name [label="name"];
+  c_sector [label="sector"];
+  c_industry [label="industry"];
+  c_desc [label="description"];
+  c_emb [label="description_embedding\n(VECTOR 384)"];
+  c_upd [label="last_updated"];
+
+  p_date [label=<<U>trade_date</U>>];
+  p_open [label="open"];
+  p_high [label="high"];
+  p_low [label="low"];
+  p_close [label="close"];
+  p_vol [label="volume"];
+
+  u_id [label=<<U>user_id</U>>];
+  u_name [label="display_name"];
+  u_role [label="role\n(analyst | viewer)"];
+  u_created [label="created_at"];
+
+  w_note [label="note"];
+  w_created [label="created_at"];
+
+  a_id [label=<<U>log_id</U>>];
+  a_action [label="action"];
+  a_time [label="logged_at"];
+
+  // Attribute links
+  COMPANY -- {c_cik c_ticker c_name c_sector c_industry c_desc c_emb c_upd};
+  PRICE -- {p_date p_open p_high p_low p_close p_vol};
+  PROFILE -- {u_id u_name u_role u_created};
+  WATCHES -- {w_note w_created};
+  ACTIVITY_LOG -- {a_id a_action a_time};
+
+  // Relationships with cardinality (double line = total participation)
+  COMPANY -- HAS_PRICE [label="1", len=2.6];
+  HAS_PRICE -- PRICE [label="N", len=2.6, color="black:black"];
+  PROFILE -- WATCHES [label="M", len=2.6];
+  WATCHES -- COMPANY [label="N", len=2.6];
+  ACTIVITY_LOG -- LOGGED_FOR [label="N", len=2.6];
+  LOGGED_FOR -- COMPANY [label="1", len=2.6];
+  ACTIVITY_LOG -- PERFORMED_BY [label="N", len=2.6];
+  PERFORMED_BY -- PROFILE [label="1", len=2.6];
+}
