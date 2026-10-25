@@ -1,0 +1,28 @@
+# Ticker universe for EquiVector (~90 large US companies).
+# Chosen to give 6-12 companies per sector, so that same-sector vs
+# cross-sector comparisons (embedding distance, return correlation) have
+# enough pairs. The sector actually stored is whatever yfinance reports,
+# not the grouping below. Lines starting with # are ignored.
+
+# Technology
+AAPL MSFT NVDA AMD INTC ORCL CRM ADBE CSCO QCOM AVGO TXN
+# Communication Services
+GOOGL META NFLX DIS T VZ CMCSA TMUS
+# Consumer Cyclical
+AMZN TSLA HD MCD NKE SBUX F GM LOW BKNG
+# Consumer Defensive
+WMT PG KO PEP COST MDLZ CL KHC
+# Healthcare
+JNJ PFE MRK ABBV LLY UNH TMO ABT AMGN
+# Financial Services
+JPM BAC WFC GS MS V MA AXP PYPL BLK
+# Industrials
+BA CAT GE HON UPS LMT DE RTX UNP
+# Energy
+XOM CVX COP SLB EOG OXY PSX
+# Utilities
+NEE DUK SO D AEP EXC
+# Real Estate
+AMT PLD SPG O EQIX CCI
+# Basic Materials
+LIN APD SHW NEM FCX DOW ECL

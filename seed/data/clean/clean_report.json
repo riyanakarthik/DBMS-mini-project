@@ -1,0 +1,39 @@
+{
+  "dropped_companies": {},
+  "dropped_price_rows": {
+    "company was dropped": 0,
+    "null OHLCV": 0,
+    "non-positive price": 0,
+    "negative volume": 0,
+    "high is not the day's max": 0,
+    "low is not the day's min": 0,
+    "weekend date": 0,
+    "duplicate (ticker, date)": 0,
+    "ticker has < 200 days": 0
+  },
+  "dropped_short_history_tickers": [],
+  "companies": 92,
+  "sectors": {
+    "Technology": 12,
+    "Consumer Cyclical": 10,
+    "Financial Services": 10,
+    "Healthcare": 9,
+    "Industrials": 9,
+    "Communication Services": 8,
+    "Consumer Defensive": 8,
+    "Energy": 7,
+    "Basic Materials": 7,
+    "Utilities": 6,
+    "Real Estate": 6
+  },
+  "batch1": {
+    "rows": 24840,
+    "from": "2025-09-22",
+    "to": "2026-10-16"
+  },
+  "batch2": {
+    "rows": 460,
+    "from": "2026-10-19",
+    "to": "2026-10-23"
+  }
+}

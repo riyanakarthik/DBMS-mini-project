@@ -39,6 +39,7 @@ cp .env.local.example .env.local   # then fill in the values
 3. Apply the schema:
    ```bash
    psql "$DATABASE_URL" -f db/schema.sql
+   psql "$DATABASE_URL" -f db/security.sql   # blocks Supabase's public REST API from the tables
    ```
 
 **Local Postgres (alternative)**
@@ -52,12 +53,20 @@ psql -d equivector -f db/schema.sql
 
 Optional constraint check (on a throwaway DB): `psql -d <scratch_db> -f db/tests/constraints_test.sql`.
 
-### 3. Seed data (Phase 1–2, coming next)
+### 3. Seed data
 ```bash
-cd seed && python -m venv .venv && source .venv/bin/activate
+cd seed && python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python fetch_data.py && python load_data.py && python embed_descriptions.py
+
+# Optional: re-download (needs network + SEC_USER_AGENT in .env.local).
+# Skip this to use the committed real data in seed/data/clean/ (fetched 2026-10-25).
+python fetch_data.py          # SEC CIKs + yfinance info + ~13 months of daily prices → data/raw/
+python clean_data.py          # validate, drop bad rows (counted in clean_report.json) → data/clean/
+
+python load_data.py --batch 1 # companies + prices up to the last week ("week 1")
+# Phase 2: python embed_descriptions.py; python load_data.py --batch 2  (fires the prices trigger)
 ```
+Data: 92 companies across 11 sectors, daily split/dividend-adjusted OHLCV from 2025-09-22 to 2026-10-23 (275 trading days). Batch 1 = 24,840 rows, batch 2 = the last 5 trading days (460 rows). Every load is a single transaction and safe to re-run.
 
 ### 4. Run
 ```bash
@@ -69,7 +78,7 @@ npm run dev
 Render `docs/er-diagram.dot` with Graphviz:
 ```bash
 brew install graphviz
-dot -Kneato -Tpng docs/er-diagram.dot -o docs/ER-diagram.png
+dot -Kneato -Tpng -Gdpi=150 docs/er-diagram.dot -o docs/ER-diagram.png
 ```
 Or paste the file into any online Graphviz viewer, with the engine set to *neato*.
 
@@ -92,7 +101,7 @@ docs/           ER diagram and project documentation
 
 ## Status
 - [x] Phase 0: scaffold, schema (5 tables + constraints), ER diagram, env template
-- [ ] Phase 1: seed pipeline
+- [x] Phase 1: seed pipeline (92 companies, batch 1 loaded)
 - [ ] Phase 2: embeddings, views, triggers, indexes
 - [ ] Phase 3: API routes + pages (dashboard, search, reports, watchlist)
 - [ ] Phase 4: auth + roles

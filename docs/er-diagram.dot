@@ -1,5 +1,5 @@
 graph EquiVector_ERD {
-  layout=neato; overlap=false; splines=true; sep="+0.4";
+  layout=neato; overlap=false; splines=true; sep="+0.4"; start=3;  // start = fixed layout seed (reproducible render)
   label="EquiVector ER Diagram (Chen notation)"; labelloc=t; fontsize=18;
   node [fontname="Helvetica", fontsize=11];
   edge [fontname="Helvetica", fontsize=11, len=1.1];

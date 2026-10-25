@@ -156,11 +156,12 @@ equivector/
 ├── README.md
 ├── .env.local.example
 ├── seed/
-│   ├── fetch_data.py          # yfinance pull → raw CSVs (run once, not committed data itself if large)
-│   ├── seed_batch1.py         # inserts "week 1" historical rows
-│   ├── seed_batch2.py         # inserts "week 2" rows → triggers fire, view updates
+│   ├── tickers.txt            # the ~90-ticker universe
+│   ├── fetch_data.py          # SEC CIKs + yfinance info/prices → data/raw/ (git-ignored)
+│   ├── clean_data.py          # validate/drop bad rows → data/clean/ (committed; offline fallback)
+│   ├── load_data.py           # --batch 1: companies + "week 1" prices; --batch 2: "week 2" → trigger fires
 │   ├── embed_descriptions.py  # sentence-transformers → writes vectors into companies table
-│   └── data/                  # raw + cleaned CSVs
+│   └── data/                  # raw/ + clean/ CSVs
 ├── db/
 │   ├── schema.sql              # CREATE TABLE statements (5 tables)
 │   ├── views.sql
@@ -193,9 +194,9 @@ equivector/
 3. `seed/fetch_data.py` — pull tickers/CIKs (SEC) + prices + descriptions + sector/industry (yfinance) → CSV.
 4. Clean CSV, confirm ~50–100 companies have usable descriptions.
 5. `seed/embed_descriptions.py` — generate embeddings, write into `companies.description_embedding`.
-6. `seed/seed_batch1.py` — insert companies + first price batch.
+6. `seed/clean_data.py` then `seed/load_data.py --batch 1` — insert companies + first price batch.
 7. Write `db/views.sql`, `db/triggers.sql`, `db/indexes.sql` (including the HNSW index) — apply via Supabase SQL editor.
-8. `seed/seed_batch2.py` — insert second price batch → confirm trigger fires, view reflects new top movers.
+8. `seed/load_data.py --batch 2` — insert second price batch (last 5 trading days) → confirm trigger fires, view reflects new top movers.
 9. Scaffold Next.js app, wire the `pg` pool (lib/db.ts), build API routes (watchlist add as a transaction).
 10. Build dashboard (top movers table, sector view) + search page (vector similarity).
 11. Add Supabase Auth + `profiles` row on signup + role check on write routes.
@@ -218,6 +219,8 @@ equivector/
 - DB access switched from supabase-js to the `pg` driver (`DATABASE_URL`) so raw SQL and real transactions work. Supabase = Postgres host + Auth only.
 - Schema hardened (see §5 note); `TIMESTAMP` → `TIMESTAMPTZ`; `activity_log.action` is NOT NULL with a whitelist.
 - Added §6a (vector documentation + data-placement justification) and §6b (novelty feature).
+- Seed scripts: `seed_batch1.py`/`seed_batch2.py` became `clean_data.py` + `load_data.py --batch 1|2`. Prices are split/dividend-adjusted (`auto_adjust=True`) so daily returns are not distorted by splits. Clean CSVs (real data, fetched 2026-10-25) are committed as the offline fallback.
+- `db/security.sql`: RLS enabled (no policies) on all tables, so Supabase's public REST API cannot read or write them; the app connects as the owner via `pg`.
 - Embedding model confirmed: all-MiniLM-L6-v2, 384-dim (closes Open Item 2).
 
 ## Appendix A — Chen ER diagram (Graphviz DOT)

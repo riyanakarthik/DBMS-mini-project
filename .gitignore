@@ -46,3 +46,6 @@ __pycache__/
 *.pyc
 .venv/
 seed/.venv/
+
+# seed: raw API dumps are re-creatable with fetch_data.py; clean CSVs ARE committed
+seed/data/raw/
