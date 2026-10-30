@@ -20,7 +20,11 @@ export function useFetch<T>(url: string | null) {
         if (!res.ok) throw new Error(body.error ?? res.statusText);
         if (!cancelled) setData(body);
       })
-      .catch((e) => !cancelled && setError(e.message))
+      .catch((e) => {
+        if (cancelled) return;
+        setError(e.message);
+        setData(null); // e.g. after logout /api/me returns 401: drop the stale user
+      })
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;

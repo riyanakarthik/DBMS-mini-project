@@ -1,6 +1,6 @@
 // Proves the watchlist transaction is atomic: if anything fails before COMMIT,
 // NEITHER the watchlist row NOR its activity_log row persists.
-//   npx tsx scripts/prove-rollback.ts
+//   npx tsx scripts/prove-rollback.ts [analyst-email]   (default analyst@gmail.com)
 // Uses the app's own withTransaction() and insert statements (lib/), not copies.
 import type { PoolClient } from "pg";
 
@@ -9,9 +9,16 @@ process.loadEnvFile(".env.local");
 async function main() {
   const { getPool, withTransaction } = await import("../lib/db");
   const { loadSql } = await import("../lib/sql");
-  const { demoUserId, insertWatchlistWithLog, cikForTicker } = await import("../lib/watchlist");
+  const { insertWatchlistWithLog, cikForTicker } = await import("../lib/watchlist");
   const pool = getPool();
-  const user = demoUserId();
+  // Run as a real analyst (only analysts may write watchlists: db/role_enforcement.sql).
+  const email = process.argv[2] ?? "analyst@gmail.com";
+  const { rows: found } = await pool.query(
+    `SELECT u.id FROM auth.users u JOIN profiles p ON p.user_id = u.id
+     WHERE u.email = $1 AND p.role = 'analyst'`, [email]);
+  if (!found[0]) throw new Error(`${email} is not an analyst`);
+  const user: string = found[0].id;
+  console.log(`running as ${email} (${user})`);
   const ticker = "KO";
 
   const counts = async () => {
@@ -26,7 +33,7 @@ async function main() {
   };
 
   const before = await counts();
-  if (before.ko_on_watchlist) throw new Error(`${ticker} is already on the demo watchlist; remove it first`);
+  if (before.ko_on_watchlist) throw new Error(`${ticker} is already on this user's watchlist; remove it first`);
   console.log("before:", before);
 
   // Scenario 1: both INSERTs succeed, then the app fails before COMMIT.

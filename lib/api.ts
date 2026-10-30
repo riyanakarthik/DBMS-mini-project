@@ -7,6 +7,8 @@ export function errorResponse(err: unknown) {
   const e = err as { code?: string; constraint?: string; message: string };
   if (err instanceof NotFoundError) return NextResponse.json({ error: e.message }, { status: 404 });
   switch (e.code) {
+    case "42501": // insufficient_privilege, raised by db/role_enforcement.sql
+      return NextResponse.json({ error: e.message }, { status: 403 });
     case "23505": // unique_violation (e.g. watchlists_pkey: already watching)
       return NextResponse.json({ error: "Already exists", constraint: e.constraint }, { status: 409 });
     case "23514": // check_violation (e.g. watchlists_note_len)

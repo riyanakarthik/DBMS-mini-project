@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/data-table";
 import { useFetch } from "@/lib/use-fetch";
+import { useMe } from "@/lib/use-me";
 
 type Company = { cik: string; ticker: string; name: string; sector: string; industry: string };
 type Neighbour = { ticker: string; name: string; sector: string; industry: string } & Record<string, unknown>;
@@ -26,6 +27,7 @@ export default function SearchPage() {
   const [sector, setSector] = useState("");
   const [ticker, setTicker] = useState("JPM");
   const [message, setMessage] = useState<string | null>(null);
+  const { canWrite } = useMe(); // cosmetic: viewers don't get the write button
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q), 250);
@@ -117,9 +119,11 @@ export default function SearchPage() {
                 <CardContent className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-muted-foreground">In both lists:</span>
                   {s.overlap.length ? s.overlap.map((t) => <Badge key={t}>{t}</Badge>) : <span>none</span>}
-                  <Button size="sm" variant="outline" className="ml-auto" onClick={addToWatchlist}>
-                    Add {s.company.ticker} to watchlist
-                  </Button>
+                  {canWrite && (
+                    <Button size="sm" variant="outline" className="ml-auto" onClick={addToWatchlist}>
+                      Add {s.company.ticker} to watchlist
+                    </Button>
+                  )}
                   {message && <span className="w-full text-muted-foreground">{message}</span>}
                 </CardContent>
               </Card>

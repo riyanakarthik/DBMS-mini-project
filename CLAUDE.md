@@ -19,6 +19,7 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 - **Never fabricate data or results.** If yfinance/network fails, say so and use the checked-in sample CSV. Report analytical findings honestly, including negative ones.
 - Vector search uses **cosine** distance: operator `<=>`, HNSW index with `vector_cosine_ops`, embeddings from all-MiniLM-L6-v2 (384-dim, normalised).
 - Roles: `profiles.role IN ('analyst','viewer')`. Analyst can write, viewer is read-only. Enforce in API routes AND in the DB.
+- Every data API route starts with `authorize()` (read) or `authorize("analyst")` (write) from `lib/auth.ts`: 401 no session, 403 wrong role. User id and role come only from the verified session + `profiles`, never from the request. Supabase clients (`lib/supabase/`) are for auth only.
 
 ## Layout
 - `app/` pages + `app/api/*/route.ts` (backend layer). `lib/db.ts` is the pg pool.
@@ -36,4 +37,5 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 - `npm run lint`, `npm run build`.
 - `psql "$DATABASE_URL" -f db/schema.sql`: apply schema.
 - `npx tsx scripts/run-sql.ts <file.sql> [params]`: run a db/queries file exactly as the API does.
+- `npx tsx scripts/test-roles.ts`: HTTP 401/403/201 role checks against the running app (needs TEST_* logins in .env.local).
 - `npx tsx scripts/prove-rollback.ts`: transaction rollback proof. `psql "$DATABASE_URL" -f db/demo/fire_trigger_live.sql`: live trigger demo.

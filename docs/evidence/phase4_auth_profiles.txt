@@ -1,0 +1,42 @@
+=== apply db/auth_profiles.sql
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 2
+=== apply db/role_enforcement.sql
+CREATE FUNCTION
+CREATE TRIGGER
+=== triggers
+         tgname          |  on_table  |                                                                       pg_get_triggerdef                                                                        
+-------------------------+------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ on_auth_user_created    | auth.users | CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_auth_user()
+ watchlists_analyst_only | watchlists | CREATE TRIGGER watchlists_analyst_only BEFORE INSERT OR DELETE OR UPDATE ON public.watchlists FOR EACH ROW EXECUTE FUNCTION enforce_analyst_watchlist_writes()
+(2 rows)
+
+       proname        | security_definer |       settings       
+----------------------+------------------+----------------------
+ handle_new_auth_user | t                | {"search_path=\"\""}
+(1 row)
+
+=== profiles after backfill
+             email             |          created_at           | display_name  |  role   |        profile_created        
+-------------------------------+-------------------------------+---------------+---------+-------------------------------
+ demo-analyst@equivector.local |                               | Demo Analyst  | analyst | 2026-10-25 14:43:00.437916+00
+ riyanakarthik@gmail.com       | 2026-10-26 03:39:55.719204+00 | riyanakarthik | viewer  | 2026-10-30 12:38:06.338282+00
+ analyst@gmail.com             | 2026-10-26 03:43:28.129024+00 | analyst       | viewer  | 2026-10-30 12:38:06.338282+00
+(3 rows)
+
+=== promote analyst@gmail.com
+SQL: UPDATE profiles SET role = 'analyst' WHERE user_id = (SELECT id FROM auth.users WHERE email = 'analyst@gmail.com') RETURNING user_id, display_name, role;
+               user_id                | display_name |  role   
+--------------------------------------+--------------+---------
+ 51507cb2-691c-4721-9e8f-a9c17523caad | analyst      | analyst
+(1 row)
+
+UPDATE 1
+             email             |  role   
+-------------------------------+---------
+ analyst@gmail.com             | analyst
+ demo-analyst@equivector.local | analyst
+ riyanakarthik@gmail.com       | viewer
+(3 rows)
+

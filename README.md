@@ -82,11 +82,22 @@ Data: 92 companies across 11 sectors, daily split/dividend-adjusted OHLCV from 2
 
 Semantic neighbours of any company: `npx tsx scripts/run-sql.ts db/queries/similar_companies.sql JPM` (the query files use `$1` parameters, like the API).
 
-### 4. Demo user (temporary, until Phase 4 auth)
+### 4. Auth and roles
 ```bash
-psql "$DATABASE_URL" -f db/demo/create_demo_user.sql   # prints a UUID
-# put it in .env.local as DEMO_USER_ID=<uuid>
+psql "$DATABASE_URL" -f db/auth_profiles.sql      # trigger: every new auth user gets a 'viewer' profile (+ backfill)
+psql "$DATABASE_URL" -f db/role_enforcement.sql   # trigger: only analysts may write watchlists
+psql "$DATABASE_URL" -v email=you@example.com -v role=analyst -f db/admin/set_role.sql   # promote a user
+psql "$DATABASE_URL" -f db/tests/role_test.sql    # DB-level role tests (rolled back, leaves no trace)
 ```
+Sign up at `/signup` (or in the Supabase dashboard). New users are **viewers** (read-only: dashboard, search, reports, own watchlist); **analysts** can also add, edit and remove watchlist entries.
+
+| Request | Not logged in | Viewer | Analyst |
+|---|---|---|---|
+| App pages | redirect to `/login` | yes | yes |
+| `GET /api/*` (read) | **401** | 200 | 200 |
+| `POST/PATCH/DELETE /api/watchlist` | **401** | **403** | 200/201 |
+
+The role is read server-side from `profiles` for the user id that Supabase Auth verified from the session cookie, never from the request. End-to-end check against the running app (needs `TEST_*` logins in `.env.local`): `npx tsx scripts/test-roles.ts`.
 
 ### 5. Run
 ```bash
@@ -141,5 +152,5 @@ docs/           ER diagram and project documentation
 - [x] Phase 1: seed pipeline (92 companies, batch 1 loaded)
 - [x] Phase 2: embeddings, views, triggers, indexes, migrations (ALTER/DROP)
 - [x] Phase 3: API routes + pages (dashboard, search, reports, watchlist), rollback proof, live trigger demo
-- [ ] Phase 4: auth + roles
+- [x] Phase 4: Supabase Auth (login/signup/logout), profiles trigger, viewer/analyst roles enforced in API (401/403) and DB
 - [ ] Phase 5: documentation + rubric checklist

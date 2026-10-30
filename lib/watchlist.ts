@@ -2,15 +2,6 @@ import type { PoolClient } from "pg";
 import { query, withTransaction } from "./db";
 import { loadSql } from "./sql";
 
-// TODO(Phase 4): remove. Until Supabase Auth exists, every watchlist call acts
-// as one demo analyst whose UUID comes from DEMO_USER_ID in .env.local
-// (created by db/demo/create_demo_user.sql).
-export function demoUserId(): string {
-  const id = process.env.DEMO_USER_ID;
-  if (!id) throw new Error("DEMO_USER_ID is not set (see .env.local.example)");
-  return id;
-}
-
 export class NotFoundError extends Error {}
 
 export async function cikForTicker(client: PoolClient, ticker: string): Promise<string> {

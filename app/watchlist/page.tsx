@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/data-table";
 import { useFetch } from "@/lib/use-fetch";
+import { useMe } from "@/lib/use-me";
 
 type Entry = {
   ticker: string;
@@ -33,6 +34,8 @@ async function send(method: string, url: string, body?: unknown) {
 
 export default function WatchlistPage() {
   const list = useFetch<Entry[]>("/api/watchlist");
+  // Cosmetic only: viewers don't see write controls. The API answers 403 anyway.
+  const { me, canWrite } = useMe();
   const companies = useFetch<Company[]>("/api/companies");
   const [ticker, setTicker] = useState("");
   const [note, setNote] = useState("");
@@ -54,12 +57,14 @@ export default function WatchlistPage() {
     <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl font-semibold">Watchlist</h1>
-        {/* TODO(Phase 4): remove once real login exists */}
-        <p className="mt-1 text-sm text-amber-700">
-          Temporary: acting as the demo analyst (DEMO_USER_ID) until Supabase Auth is added in Phase 4.
-        </p>
+        {me && !canWrite && (
+          <p className="mt-1 text-sm text-amber-700">
+            You are logged in as a <b>viewer</b>: read-only access. Ask an admin to make you an analyst to add or edit entries.
+          </p>
+        )}
       </div>
 
+      {canWrite && (
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Add a company</CardTitle>
@@ -88,11 +93,14 @@ export default function WatchlistPage() {
           {status && <p className={`mt-3 text-sm ${status.ok ? "text-green-700" : "text-red-600"}`}>{status.text}</p>}
         </CardContent>
       </Card>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Your companies</CardTitle>
-          <CardDescription>Edit a note (UPDATE) or remove a company (DELETE); each change is also logged.</CardDescription>
+          <CardDescription>
+            {canWrite ? "Edit a note (UPDATE) or remove a company (DELETE); each change is also logged." : "Your watchlist (read-only)."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {list.error && <p className="text-sm text-red-600">{list.error}</p>}
@@ -104,6 +112,7 @@ export default function WatchlistPage() {
                 header: "Note",
                 cell: (r) => {
                   const e = r as Entry;
+                  if (!canWrite) return <span>{e.note ?? "—"}</span>;
                   const value = edits[e.cik] ?? e.note ?? "";
                   return (
                     <div className="flex min-w-80 gap-2">
