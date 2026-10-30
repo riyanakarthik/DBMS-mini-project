@@ -1,0 +1,55 @@
+# T2 live trigger demo - run 2026-10-30 13:39 UTC on Supabase, db/demo/fire_trigger_live.sql (AAPL)
+BEGIN
+=== BEFORE ===
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-25 14:45:24.171298+00
+(1 row)
+
+ activity_log_rows | price_insert_rows 
+-------------------+-------------------
+               470 |               464
+(1 row)
+
+SELECT 2
+DELETE 2
+ pg_sleep 
+----------
+ 
+(1 row)
+
+=== INSERT 2 price rows ===
+INSERT 0 2
+=== AFTER ===
+ ticker |         last_updated          
+--------+-------------------------------
+ AAPL   | 2026-10-30 13:39:34.673832+00
+(1 row)
+
+ activity_log_rows | price_insert_rows 
+-------------------+-------------------
+               472 |               466
+(1 row)
+
+=== The newest activity_log rows (written by the trigger) ===
+ log_id |      action      | ticker |               user_id                |           logged_at           
+--------+------------------+--------+--------------------------------------+-------------------------------
+    476 | PRICE_INSERT     | AAPL   |                                      | 2026-10-30 13:39:34.673832+00
+    475 | PRICE_INSERT     | AAPL   |                                      | 2026-10-30 13:39:34.673832+00
+    472 | WATCHLIST_REMOVE | KO     | f711fd0b-2c14-4e17-8c06-a25c2c435fea | 2026-10-25 14:49:20.942261+00
+(3 rows)
+
+COMMIT
+
+# prices unchanged afterwards:
+ ticker | trade_date |  close   
+--------+------------+----------
+ AAPL   | 2026-10-23 | 347.7300
+ AAPL   | 2026-10-22 | 348.2200
+(2 rows)
+
+ price_rows 
+------------
+      25300
+(1 row)
+

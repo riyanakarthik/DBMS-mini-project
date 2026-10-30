@@ -1,0 +1,33 @@
+# T4 role tests - run 2026-10-30 13:39 UTC on Supabase, db/tests/role_test.sql (single transaction, rolled back)
+BEGIN
+--- 1. Signup trigger: inserting a new auth user creates a viewer profile
+INSERT 0 1
+               user_id                | display_name |  role  
+--------------------------------------+--------------+--------
+ 00000000-0000-4000-8000-000000000001 | role-test    | viewer
+(1 row)
+
+--- 2. Invalid role on UPDATE (expect: violates check constraint "profiles_role_check")
+22: ERROR:  new row for relation "profiles" violates check constraint "profiles_role_check"
+DETAIL:  Failing row contains (00000000-0000-4000-8000-000000000001, role-test, admin, 2026-10-30 13:39:29.239276+00).
+--- 3. Invalid role on INSERT (expect: violates check constraint "profiles_role_check")
+INSERT 0 1
+DELETE 1
+29: ERROR:  new row for relation "profiles" violates check constraint "profiles_role_check"
+DETAIL:  Failing row contains (00000000-0000-4000-8000-000000000002, bad role, superuser, 2026-10-30 13:39:29.239276+00).
+--- 4. NULL role (expect: null value in column "role" violates not-null constraint)
+33: ERROR:  null value in column "role" of relation "profiles" violates not-null constraint
+DETAIL:  Failing row contains (00000000-0000-4000-8000-000000000002, null role, null, 2026-10-30 13:39:29.239276+00).
+--- 5. A viewer cannot get a watchlist row (expect: only analysts can modify watchlists)
+37: ERROR:  only analysts can modify watchlists (user 00000000-0000-4000-8000-000000000001)
+CONTEXT:  PL/pgSQL function enforce_analyst_watchlist_writes() line 7 at RAISE
+--- 6. After promotion to analyst, the same insert succeeds (expect: INSERT 0 1)
+UPDATE 1
+INSERT 0 1
+ROLLBACK
+--- 7. After ROLLBACK nothing remains (expect: 0)
+ leftover_test_users 
+---------------------
+                   0
+(1 row)
+

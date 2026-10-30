@@ -24,7 +24,7 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 ## Layout
 - `app/` pages + `app/api/*/route.ts` (backend layer). `lib/db.ts` is the pg pool.
 - `db/schema.sql` → `indexes.sql` → `views.sql` → `triggers.sql`; `db/migrations/` for ALTER/DROP; `db/local/` for local-only helpers; `db/tests/` for SQL test scripts.
-- `seed/` Python pipeline, `seed/data/` CSVs. `docs/` project documentation (`er-diagram.dot` is Chen notation).
+- `seed/` Python pipeline, `seed/data/` CSVs. `docs/` project documentation (`er-diagram.dot` is Chen notation; `rubric-checklist.md` maps the PDF to files; `evidence/` holds raw test outputs; never hand-write results there).
 
 ## Team / git
 - Student A: `db/`, `seed/`, Postgres/pgvector, triggers/views/indexes, SQL reports.
@@ -37,5 +37,5 @@ PES University DBMS Level 3 project, 2-person team. **ARCHITECTURE.md is the des
 - `npm run lint`, `npm run build`.
 - `psql "$DATABASE_URL" -f db/schema.sql`: apply schema.
 - `npx tsx scripts/run-sql.ts <file.sql> [params]`: run a db/queries file exactly as the API does.
-- `npx tsx scripts/test-roles.ts`: HTTP 401/403/201 role checks against the running app (needs TEST_* logins in .env.local).
+- `npm run test:roles`: HTTP 401/403/201 role checks against the running app (needs TEST_* logins in .env.local; adds `--experimental-websocket` for Node 20).
 - `npx tsx scripts/prove-rollback.ts`: transaction rollback proof. `psql "$DATABASE_URL" -f db/demo/fire_trigger_live.sql`: live trigger demo.

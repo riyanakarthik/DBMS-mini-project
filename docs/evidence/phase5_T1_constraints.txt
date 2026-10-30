@@ -1,0 +1,32 @@
+# T1 constraint tests - run 2026-10-30 13:39 UTC on a throwaway LOCAL database (PostgreSQL 17 + pgvector), db/tests/constraints_test.sql
+INSERT 0 1
+6: ERROR:  new row for relation "companies" violates check constraint "companies_cik_format"
+DETAIL:  Failing row contains (320193, MSFT, x, null, null, null, null, 2026-10-30 19:09:28.140358+05:30).
+7: ERROR:  new row for relation "companies" violates check constraint "companies_ticker_format"
+DETAIL:  Failing row contains (0000000001, aapl, x, null, null, null, null, 2026-10-30 19:09:28.140454+05:30).
+8: ERROR:  duplicate key value violates unique constraint "companies_ticker_key"
+DETAIL:  Key (ticker)=(AAPL) already exists.
+INSERT 0 1
+10: ERROR:  new row for relation "prices" violates check constraint "prices_trading_day"
+DETAIL:  Failing row contains (0000320193, 2025-10-25, 10.0000, 11.0000, 9.0000, 10.5000, 100).
+11: ERROR:  new row for relation "prices" violates check constraint "prices_high_is_max"
+DETAIL:  Failing row contains (0000320193, 2025-10-23, 10.0000, 9.0000, 9.5000, 10.0000, 100).
+12: ERROR:  new row for relation "prices" violates check constraint "prices_volume_nonneg"
+DETAIL:  Failing row contains (0000320193, 2025-10-22, 10.0000, 11.0000, 9.0000, 10.0000, -1).
+13: ERROR:  insert or update on table "prices" violates foreign key constraint "prices_cik_fkey"
+DETAIL:  Key (cik)=(0000999999) is not present in table "companies".
+INSERT 0 1
+15: ERROR:  new row for relation "profiles" violates check constraint "profiles_role_check"
+DETAIL:  Failing row contains (11111111-1111-1111-1111-111111111111, null, admin, 2026-10-30 19:09:28.141542+05:30).
+INSERT 0 1
+INSERT 0 1
+18: ERROR:  duplicate key value violates unique constraint "watchlists_pkey"
+DETAIL:  Key (user_id, cik)=(11111111-1111-1111-1111-111111111111, 0000320193) already exists.
+19: ERROR:  new row for relation "activity_log" violates check constraint "activity_log_action_check"
+DETAIL:  Failing row contains (1, HACK, null, null, 2026-10-30 19:09:28.142064+05:30).
+DELETE 1
+ prices | wl |  role  
+--------+----+--------
+      0 |  0 | viewer
+(1 row)
+

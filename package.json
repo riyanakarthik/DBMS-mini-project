@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:roles": "NODE_OPTIONS=--experimental-websocket tsx scripts/test-roles.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

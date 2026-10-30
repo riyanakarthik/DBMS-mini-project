@@ -4,7 +4,8 @@
 // cookies from @supabase/ssr), then checks the HTTP status of reads and
 // writes for: anonymous (expect 401), viewer (reads 200, writes 403),
 // analyst (reads 200, writes 200/201).
-// Needs in .env.local: TEST_ANALYST_EMAIL/PASSWORD, TEST_VIEWER_EMAIL/PASSWORD.
+// Reads TEST_ANALYST_EMAIL/PASSWORD and TEST_VIEWER_EMAIL/PASSWORD from .env.local;
+// a section whose login is missing is reported as SKIPPED, not silently passed.
 import { createServerClient } from "@supabase/ssr";
 
 process.loadEnvFile(".env.local");
@@ -57,9 +58,19 @@ async function check(
   return json;
 }
 
+async function loginIfConfigured(prefix: "TEST_VIEWER" | "TEST_ANALYST"): Promise<string | null> {
+  const email = process.env[`${prefix}_EMAIL`];
+  const password = process.env[`${prefix}_PASSWORD`];
+  if (!email || !password) {
+    console.log(`SKIPPED ${prefix} tests: ${prefix}_EMAIL / ${prefix}_PASSWORD not set in .env.local`);
+    return null;
+  }
+  return login(email, password);
+}
+
 async function main() {
-  const viewer = await login(env("TEST_VIEWER_EMAIL"), env("TEST_VIEWER_PASSWORD"));
-  const analyst = await login(env("TEST_ANALYST_EMAIL"), env("TEST_ANALYST_PASSWORD"));
+  const viewer = await loginIfConfigured("TEST_VIEWER");
+  const analyst = await loginIfConfigured("TEST_ANALYST");
 
   // --- anonymous: no cookie at all
   await check("anonymous", null, "GET", "/api/top-movers", [401]);
@@ -67,7 +78,9 @@ async function main() {
   await check("anonymous", null, "POST", "/api/watchlist", [401], { ticker: "MSFT" });
 
   // --- viewer: may read, may not write
-  const vMe = await check("viewer", viewer, "GET", "/api/me", [200]);
+  let vMe: { email?: string; role?: string } | null = null;
+  if (viewer) {
+  vMe = await check("viewer", viewer, "GET", "/api/me", [200]);
   await check("viewer", viewer, "GET", "/api/reports/sector-summary", [200]);
   await check("viewer", viewer, "GET", "/api/similar?ticker=JPM", [200]);
   await check("viewer", viewer, "GET", "/api/watchlist", [200]);
@@ -78,16 +91,24 @@ async function main() {
   });
   await check("viewer", viewer, "PATCH", "/api/watchlist", [403], { cik: "0000789019", note: "x" });
   await check("viewer", viewer, "DELETE", "/api/watchlist?cik=0000789019", [403]);
+  // input validation on reads
+  await check("viewer", viewer, "GET", "/api/reports/sector-having?min_companies=abc", [400]);
+  await check("viewer", viewer, "GET", "/api/similar?ticker=ZZZZ", [404]);
+  }
 
   // --- analyst: may read and write
-  const aMe = await check("analyst", analyst, "GET", "/api/me", [200]);
+  let aMe: { email?: string; role?: string } | null = null;
+  if (analyst) {
+  aMe = await check("analyst", analyst, "GET", "/api/me", [200]);
   const [msft] = await check("analyst", analyst, "GET", "/api/companies?q=MSFT", [200]);
   await check("analyst (cleanup)", analyst, "DELETE", `/api/watchlist?cik=${msft.cik}`, [200, 404]);
   await check("analyst", analyst, "POST", "/api/watchlist", [201], { ticker: "MSFT", note: "role test: added by analyst" });
   await check("analyst", analyst, "POST", "/api/watchlist", [409], { ticker: "MSFT" }); // duplicate -> DB PK
   await check("analyst", analyst, "PATCH", "/api/watchlist", [200], { cik: msft.cik, note: "role test: note edited" });
+  await check("analyst", analyst, "PATCH", "/api/watchlist", [400], { cik: msft.cik, note: "x".repeat(501) }); // DB CHECK note <= 500
+  }
 
-  console.log(`viewer = ${vMe?.email} (${vMe?.role}), analyst = ${aMe?.email} (${aMe?.role})`);
+  console.log(`viewer = ${vMe?.email ?? "skipped"} (${vMe?.role ?? "-"}), analyst = ${aMe?.email ?? "skipped"} (${aMe?.role ?? "-"})`);
   console.table(results);
   const failed = results.filter((r) => r.result === "FAIL").length;
   console.log(failed ? `${failed} FAILED` : `ALL ${results.length} PASSED`);

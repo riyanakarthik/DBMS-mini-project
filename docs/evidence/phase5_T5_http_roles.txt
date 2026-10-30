@@ -1,0 +1,36 @@
+# T5 HTTP role tests - run 2026-10-30 13:45 UTC against the production build (npm run build && npm start), NODE_OPTIONS=--experimental-websocket npx tsx scripts/test-roles.ts
+viewer = riyanakarthik@gmail.com (viewer), analyst = analyst@gmail.com (analyst)
+┌─────────┬────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────┬───────────┬────────┬────────┐
+│ (index) │ who                    │ request                                                                                      │ expected  │ actual │ result │
+├─────────┼────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────┼───────────┼────────┼────────┤
+│ 0       │ 'anonymous'            │ 'GET /api/top-movers'                                                                        │ '401'     │ 401    │ 'PASS' │
+│ 1       │ 'anonymous'            │ 'GET /api/watchlist'                                                                         │ '401'     │ 401    │ 'PASS' │
+│ 2       │ 'anonymous'            │ 'POST /api/watchlist {"ticker":"MSFT"}'                                                      │ '401'     │ 401    │ 'PASS' │
+│ 3       │ 'viewer'               │ 'GET /api/me'                                                                                │ '200'     │ 200    │ 'PASS' │
+│ 4       │ 'viewer'               │ 'GET /api/reports/sector-summary'                                                            │ '200'     │ 200    │ 'PASS' │
+│ 5       │ 'viewer'               │ 'GET /api/similar?ticker=JPM'                                                                │ '200'     │ 200    │ 'PASS' │
+│ 6       │ 'viewer'               │ 'GET /api/watchlist'                                                                         │ '200'     │ 200    │ 'PASS' │
+│ 7       │ 'viewer'               │ 'POST /api/watchlist {"ticker":"MSFT"}'                                                      │ '403'     │ 403    │ 'PASS' │
+│ 8       │ 'viewer (forged role)' │ 'POST /api/watchlist {"ticker":"MSFT","role":"analyst"}'                                     │ '403'     │ 403    │ 'PASS' │
+│ 9       │ 'viewer'               │ 'PATCH /api/watchlist {"cik":"0000789019","note":"x"}'                                       │ '403'     │ 403    │ 'PASS' │
+│ 10      │ 'viewer'               │ 'DELETE /api/watchlist?cik=0000789019'                                                       │ '403'     │ 403    │ 'PASS' │
+│ 11      │ 'viewer'               │ 'GET /api/reports/sector-having?min_companies=abc'                                           │ '400'     │ 400    │ 'PASS' │
+│ 12      │ 'viewer'               │ 'GET /api/similar?ticker=ZZZZ'                                                               │ '404'     │ 404    │ 'PASS' │
+│ 13      │ 'analyst'              │ 'GET /api/me'                                                                                │ '200'     │ 200    │ 'PASS' │
+│ 14      │ 'analyst'              │ 'GET /api/companies?q=MSFT'                                                                  │ '200'     │ 200    │ 'PASS' │
+│ 15      │ 'analyst (cleanup)'    │ 'DELETE /api/watchlist?cik=0000789019'                                                       │ '200/404' │ 404    │ 'PASS' │
+│ 16      │ 'analyst'              │ 'POST /api/watchlist {"ticker":"MSFT","note":"role test: added by analyst"}'                 │ '201'     │ 201    │ 'PASS' │
+│ 17      │ 'analyst'              │ 'POST /api/watchlist {"ticker":"MSFT"}'                                                      │ '409'     │ 409    │ 'PASS' │
+│ 18      │ 'analyst'              │ 'PATCH /api/watchlist {"cik":"0000789019","note":"role test: note edited"}'                  │ '200'     │ 200    │ 'PASS' │
+│ 19      │ 'analyst'              │ 'PATCH /api/watchlist {"cik":"0000789019","note":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' │ '400'     │ 400    │ 'PASS' │
+└─────────┴────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────┴───────────┴────────┴────────┘
+ALL 20 PASSED
+latest watchlist activity_log rows:
+┌─────────┬────────┬────────────────────┬────────┬────────────────────────────────────────┬─────────────────────────────────┬──────────────────────────┐
+│ (index) │ log_id │ action             │ ticker │ user_id                                │ email                           │ logged_at                │
+├─────────┼────────┼────────────────────┼────────┼────────────────────────────────────────┼─────────────────────────────────┼──────────────────────────┤
+│ 0       │ 480    │ 'WATCHLIST_UPDATE' │ 'MSFT' │ '935177c8-677a-4f88-8037-60df34fbc29e' │ 'analyst@gmail.com'             │ 2026-10-30T13:45:28.719Z │
+│ 1       │ 479    │ 'WATCHLIST_ADD'    │ 'MSFT' │ '935177c8-677a-4f88-8037-60df34fbc29e' │ 'analyst@gmail.com'             │ 2026-10-30T13:45:26.634Z │
+│ 2       │ 472    │ 'WATCHLIST_REMOVE' │ 'KO'   │ 'f711fd0b-2c14-4e17-8c06-a25c2c435fea' │ 'demo-analyst@equivector.local' │ 2026-10-25T14:49:20.942Z │
+│ 3       │ 471    │ 'WATCHLIST_ADD'    │ 'KO'   │ 'f711fd0b-2c14-4e17-8c06-a25c2c435fea' │ 'demo-analyst@equivector.local' │ 2026-10-25T14:49:19.727Z │
+└─────────┴────────┴────────────────────┴────────┴────────────────────────────────────────┴─────────────────────────────────┴──────────────────────────┘
